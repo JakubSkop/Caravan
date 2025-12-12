@@ -235,26 +235,26 @@ namespace Caravan{
             return ((std::string(typeid(Ts).name()) + ", ") + ...);
         };
 
-        struct CompareEqual{
+        struct Identical{
             template <typename... T1s, typename... T2s>
-            constexpr bool compareEqual(Typelist<T1s...>, Typelist<T2s...>);
+            constexpr bool identical(Typelist<T1s...>, Typelist<T2s...>);
 
             template <typename T1, typename... T1s, typename T2, typename... T2s>
-            constexpr bool compareEqual(Typelist<T1, T1s...> tl1, Typelist<T2, T2s...> tl2){
-                return std::is_same_v<T1,T2> && compareEqual(Typelist<T1s...>{}, Typelist<T2s...>{});
+            constexpr bool identical(Typelist<T1, T1s...> tl1, Typelist<T2, T2s...> tl2){
+                return std::is_same_v<T1,T2> && identical(Typelist<T1s...>{}, Typelist<T2s...>{});
             }
 
             template <typename... T1s>
-            constexpr bool compareEqual(Typelist<T1s...> tl1, Typelist<> tl2){
+            constexpr bool identical(Typelist<T1s...> tl1, Typelist<> tl2){
                 return false;
             }
 
             template <typename... T2s>
-            constexpr bool compareEqual(Typelist<> tl1, Typelist<T2s...> tl2){
+            constexpr bool identical(Typelist<> tl1, Typelist<T2s...> tl2){
                 return false;
             }
 
-            constexpr bool compareEqual(Typelist<> tl1, Typelist<> tl2){
+            constexpr bool identical(Typelist<> tl1, Typelist<> tl2){
                 return true;
             }
         };
@@ -280,6 +280,15 @@ namespace Caravan{
 
             template <typename... T2s>
             constexpr bool subset(Typelist<>, Typelist<T2s...>){
+                return true;
+            }
+
+            template <typename... T1s>
+            constexpr bool subset(Typelist<T1s...>, Typelist<>){
+                return false;
+            }
+
+            constexpr bool subset(Typelist<>, Typelist<>){
                 return true;
             }
         };
@@ -330,8 +339,8 @@ namespace Caravan{
     }
 
     template <class T1, class T2>
-    constexpr bool compareEqual(){
-        return (T1::size == T2::size) && Impl::CompareEqual{}.compareEqual(T1{}, T2{});
+    constexpr bool areIdentical(){
+        return (T1::size == T2::size) && Impl::Identical{}.identical(T1{}, T2{});
     }
 
     template <class T, typename S>
@@ -340,8 +349,15 @@ namespace Caravan{
     }
 
     template <class T1, class T2>
-    constexpr bool subset(){
+    constexpr bool isSubset(){
         return Impl::Subset{}.subset(T1{},T2{});
     }
+
+    template <class T1, class T2>
+    constexpr bool areEqual(){
+        return isSubset<T1,T2>() && isSubset<T2,T1>();
+    }
+
+    
 
 };
